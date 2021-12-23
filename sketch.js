@@ -207,15 +207,15 @@ function startGame() {
 
 function setBackground(val) {
   if (mySound.isPlaying()) {
-    console.log(mySound.currentTime()+ " " + timestampToBeat(mySound.currentTime()));
+    //console.log(mySound.currentTime()+ " " + timestampToBeat(mySound.currentTime()));
   }
   game.background=val;
   
-  console.log(ship.laser.active);
+  //console.log(ship.laser.active);
 	if (ship.laser.active > 0) {
 	  ship.laser.active -= 1;
 	}
-	console.log(ship.laser.cooldown);
+	//console.log(ship.laser.cooldown);
 	if (ship.laser.cooldown > 0) {
 	  ship.laser.cooldown -= 1;
 	}
@@ -244,7 +244,7 @@ function mouseClicked() {
 }
 
 function keyPressed(){
-  console.log(key);
+  //console.log(key);
   switch(key) {
     case " ":
       if (ship.laser.cooldown <= 0) {
@@ -358,7 +358,7 @@ function draw() {
         // Calculate peak velocity point
         
         ap.y_p = (-Math.pow(ap.v_tp,2)/(4*ap.a_tp)) + (0.5*(ap.y_tp+ap.y_f));
-        console.log(ap.y_p);
+        //console.log(ap.y_p);
         ap.v_p = Math.sign(ap.a_tp)*Math.sqrt( (0.5*Math.pow(ap.v_tp,2)) + (ap.a_tp * (ap.y_f-ap.y_tp) ) );
         ap.t_p = ((ap.v_p - ap.v_tp)/ap.a_tp) + ap.t_tp;
         ap.a_p = -ap.a_tp;
