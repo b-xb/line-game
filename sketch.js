@@ -20,13 +20,16 @@ bar_preload=4;
 division = 2;
 var level_data;
 
-function loadLevel(level_path){
+function preload() {
+  createCanvas(game.width, game.height);
+  level_path = "level.json";
   level_data = loadJSON(level_path,loadMusic,loadingError,loadingLevelProgress);
+  function loadMusic() {
+    mySound = loadSound("line_theme.mp3",null,loadingError,loadingMusicProgress);
+  }
 }
 
-function loadMusic() {
-  mySound = loadSound(level_data.music_source,startGame,loadingError,loadingMusicProgress);
-}
+
 
 function loadingLevelProgress(p){
   background("black");
@@ -178,7 +181,7 @@ function resetSprites() {
 
 function setup() {
   createCanvas(game.width, game.height);
-  loadLevel("level.json");
+  startGame();
 }
 
 function startGame() {
