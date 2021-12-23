@@ -417,11 +417,12 @@ function draw() {
       }
 	
 	  } else {
+      background("black");
       strokeWeight(4);
       stroke(0);
       fill(255);
       textAlign(CENTER);
-      text('CONTROLS\n\nmove: a s d f g h j k l ;\nshoot: space\n\nclick the screen to start/stop the game', width/2, height/2);
+      text('------------------- L  I  N  E -------------------\n\nCONTROLS\n\nmove: a s d f g h j k l ;\nshoot: space\n\nclick the screen to start/stop the demo\n\n---------------------------------------------------', width/2, (height/2)-(13*5));
     }
 	
 	}
