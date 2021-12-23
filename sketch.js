@@ -421,7 +421,7 @@ function draw() {
       stroke(0);
       fill(255);
       textAlign(CENTER);
-      text('click to play', width/2, height/2);
+      text('CONTROLS\n\nmove: a s d f g h j k l ;\nshoot: space\n\nclick the screen to start/stop the game', width/2, height/2);
     }
 	
 	}
