@@ -327,9 +327,18 @@ function draw() {
     
       if (mySound.isPlaying()) {
 
+        // add guides
         strokeWeight(4);
         stroke(0);
         line(ship.x + (ship.l/2),0,ship.x + (ship.l/2),550);
+
+        fill(255);
+        textAlign(LEFT,CENTER);
+
+        controls = "asdfghjkl;"
+        for (let i = 0; i < controls.length ; i++) {
+          text(controls[i],20,500-(i*50));
+        }
 
         // Ship moving algorithm
         // Works out algorithm for the ships movement to it's target location set by key input
