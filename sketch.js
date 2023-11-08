@@ -186,10 +186,10 @@ function resetSprites() {
 
 function setup() {
   createCanvas(game.width, game.height);
-  startGame();
+  loadLevel();
 }
 
-function startGame() {
+function loadLevel() {
 
   bpm = level_data.bpm;
   division = level_data.beat_division;
