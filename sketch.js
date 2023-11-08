@@ -3,7 +3,8 @@ game = {
   width:800,
   background:"black",
   timestamp:0,
-  prev_timestamp:0
+  prev_timestamp:0,
+  fail: false,
 };
 
 var mySound;
@@ -229,15 +230,23 @@ function changeText(obj) {
   text(obj.txt, width/2, height/2);
 }
 
+function resetEverything() {
+  mySound.stop();
+  liveSprites.clear();
+  game.timestamp = 0;
+  game.prev_timestamp = 0;
+  ship.v = 0;
+  ship.y = 50;
+}
+
 function mouseClicked() {
   if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+    if(game.fail) {
+      game.fail=false;
+    }
+
     if (mySound.isPlaying() ) {
-      mySound.stop();
-      liveSprites.clear();
-      game.timestamp = 0;
-      game.prev_timestamp = 0;
-      ship.v = 0;
-      ship.y = 50;
+      resetEverything();
     } else {
       mySound.playMode("sustain");
       mySound.play();
@@ -301,129 +310,161 @@ function keyPressed(){
 
 
 function draw() {
-  background(game.background);
-  if (mySound) {
-    game.prev_timestamp = game.timestamp;
-    game.timestamp = mySound.currentTime();
-  
-    if (mySound.isPlaying()) {
+  if (!game.fail) {
+    background(game.background);
+    if (mySound) {
+      game.prev_timestamp = game.timestamp;
+      game.timestamp = mySound.currentTime();
     
-      strokeWeight(4);
-      stroke(0);
-      line(ship.x + (ship.l/2),0,ship.x + (ship.l/2),550);
+      if (mySound.isPlaying()) {
 
-      // Ship moving algorithm
-      // Works out algorithm for the ships movement to it's target location set by key input
+        strokeWeight(4);
+        stroke(0);
+        line(ship.x + (ship.l/2),0,ship.x + (ship.l/2),550);
 
-      ap = autopilot;
-   
-      if (ap.target != ship.target) {
-  
-        // setup
-        
-        ap.target = ship.target;
-        ap.y_o = ship.y;
+        // Ship moving algorithm
+        // Works out algorithm for the ships movement to it's target location set by key input
+
+        ap = autopilot;
     
-        ap.v_o = ship.v;
-        ap.t_o = game.prev_timestamp;
-        ap.y_f = ap.target;
-        ap.v_f = 0;
-        ap.d = ap.y_f - ap.y_o;  // displacement
-        ap.d_dir = Math.sign(ap.d);
-  
-        // Work out ship curve type
+        if (ap.target != ship.target) {
+    
+          // setup
+          
+          ap.target = ship.target;
+          ap.y_o = ship.y;
+      
+          ap.v_o = ship.v;
+          ap.t_o = game.prev_timestamp;
+          ap.y_f = ap.target;
+          ap.v_f = 0;
+          ap.d = ap.y_f - ap.y_o;  // displacement
+          ap.d_dir = Math.sign(ap.d);
+    
+          // Work out ship curve type
 
-        if (Math.sign(ap.v_o)*ap.d_dir < 0) {  // will skid, travelling in wrong direction
-        
-          ap.a_o = ap.force * ap.d_dir;
-          ap.v_tp = 0;
-          ap.t_tp = ((ap.v_tp-ap.v_o)/ap.a_o) + ap.t_o;
-          ap.y_tp = -Math.pow(ap.v_o,2)/(2*ap.a_o) + ap.y_o;
-          ap.a_tp = ap.force * ap.d_dir;
+          if (Math.sign(ap.v_o)*ap.d_dir < 0) {  // will skid, travelling in wrong direction
+          
+            ap.a_o = ap.force * ap.d_dir;
+            ap.v_tp = 0;
+            ap.t_tp = ((ap.v_tp-ap.v_o)/ap.a_o) + ap.t_o;
+            ap.y_tp = -Math.pow(ap.v_o,2)/(2*ap.a_o) + ap.y_o;
+            ap.a_tp = ap.force * ap.d_dir;
 
-        } else if ( Math.pow(ap.v_o,2) > (2 * ap.force * ap.d * ap.d_dir) ) { // will overshoot
-        
-          ap.a_o = -ap.force * ap.d_dir;
-          ap.v_tp = 0;
-          ap.t_tp = ((ap.v_tp-ap.v_o)/ap.a_o) + ap.t_o;
-          ap.y_tp = -Math.pow(ap.v_o,2)/(2*ap.a_o) + ap.y_o;
-          ap.a_tp = -ap.force * ap.d_dir;
+          } else if ( Math.pow(ap.v_o,2) > (2 * ap.force * ap.d * ap.d_dir) ) { // will overshoot
+          
+            ap.a_o = -ap.force * ap.d_dir;
+            ap.v_tp = 0;
+            ap.t_tp = ((ap.v_tp-ap.v_o)/ap.a_o) + ap.t_o;
+            ap.y_tp = -Math.pow(ap.v_o,2)/(2*ap.a_o) + ap.y_o;
+            ap.a_tp = -ap.force * ap.d_dir;
 
-        } else {  // no turning point
-        
-          ap.a_o = ap.force * ap.d_dir;
-          ap.v_tp = ap.v_o;
-          ap.t_tp = ap.t_o;
-          ap.y_tp = ap.y_o;
-          ap.a_tp = ap.a_o;
+          } else {  // no turning point
+          
+            ap.a_o = ap.force * ap.d_dir;
+            ap.v_tp = ap.v_o;
+            ap.t_tp = ap.t_o;
+            ap.y_tp = ap.y_o;
+            ap.a_tp = ap.a_o;
+          }
+
+          // Calculate peak velocity point
+          
+          ap.y_p = (-Math.pow(ap.v_tp,2)/(4*ap.a_tp)) + (0.5*(ap.y_tp+ap.y_f));
+          //console.log(ap.y_p);
+          ap.v_p = Math.sign(ap.a_tp)*Math.sqrt( (0.5*Math.pow(ap.v_tp,2)) + (ap.a_tp * (ap.y_f-ap.y_tp) ) );
+          ap.t_p = ((ap.v_p - ap.v_tp)/ap.a_tp) + ap.t_tp;
+          ap.a_p = -ap.a_tp;
+    
+          // Calculate arrival time
+          
+          ap.t_f = -(ap.v_p/ap.a_p) + ap.t_p;
+          ap.a_f = 0;
         }
+    
+        // Calculate current position and velocity for ship
+        
+        if (game.timestamp >= ap.t_f) {
+          ship.v = 0;
+          ship.y = ap.target;
+        } else if (game.timestamp >= ap.t_p) {
+          t = game.timestamp-ap.t_p;
+          ship.v = ap.v_p + (ap.a_p * t);
+          ship.y = 0.5*(ship.v+ap.v_p)*t + ap.y_p;
+        } else if (game.timestamp >= ap.t_tp) {
+          t = game.timestamp-ap.t_tp;
+          ship.v = ap.v_tp + (ap.a_tp * t);
+          ship.y = 0.5*(ship.v+ap.v_tp)*t + ap.y_tp
+        } else if (game.timestamp >= ap.t_o) {
+          t = game.timestamp-ap.t_o;
+          ship.v = ap.v_o + (ap.a_o * t);
+          ship.y = 0.5*(ship.v+ap.v_o)*t + ap.y_o;
+        }
+        
+        // Draw ship's laser
+    
+        if (ship.laser.active > 0) {
+          ship.laser.draw();
+        }
+        
+        // Draw ship
+    
+        ship.draw();
+        
+        // Draw boulder sprites
+    
+        for (let sprite of liveSprites) {
 
-        // Calculate peak velocity point
-        
-        ap.y_p = (-Math.pow(ap.v_tp,2)/(4*ap.a_tp)) + (0.5*(ap.y_tp+ap.y_f));
-        //console.log(ap.y_p);
-        ap.v_p = Math.sign(ap.a_tp)*Math.sqrt( (0.5*Math.pow(ap.v_tp,2)) + (ap.a_tp * (ap.y_f-ap.y_tp) ) );
-        ap.t_p = ((ap.v_p - ap.v_tp)/ap.a_tp) + ap.t_tp;
-        ap.a_p = -ap.a_tp;
-  
-        // Calculate arrival time
-        
-        ap.t_f = -(ap.v_p/ap.a_p) + ap.t_p;
-        ap.a_f = 0;
-      }
-  
-      // Calculate current position and velocity for ship
-      
-      if (game.timestamp >= ap.t_f) {
-        ship.v = 0;
-        ship.y = ap.target;
-      } else if (game.timestamp >= ap.t_p) {
-        t = game.timestamp-ap.t_p;
-        ship.v = ap.v_p + (ap.a_p * t);
-        ship.y = 0.5*(ship.v+ap.v_p)*t + ap.y_p;
-      } else if (game.timestamp >= ap.t_tp) {
-        t = game.timestamp-ap.t_tp;
-        ship.v = ap.v_tp + (ap.a_tp * t);
-        ship.y = 0.5*(ship.v+ap.v_tp)*t + ap.y_tp
-      } else if (game.timestamp >= ap.t_o) {
-        t = game.timestamp-ap.t_o;
-        ship.v = ap.v_o + (ap.a_o * t);
-        ship.y = 0.5*(ship.v+ap.v_o)*t + ap.y_o;
-      }
-      
-      // Draw ship's laser
-  
-      if (ship.laser.active > 0) {
-        ship.laser.draw();
-      }
-      
-      // Draw ship
-  
-      ship.draw();
-      
-      // Draw boulder sprites
-  
-      for (let sprite of liveSprites) {
-        if (sprite.alive == 1) {
-          if (sprite.x < 0-sprite.r-sprite.sw) {
-            liveSprites.delete(sprite);
-          } else {
-            ship_position = ship.x + (ship.l/2)
-            speed = 100;
-            sprite.x = ship_position + (beatTimestamp(sprite.lx)*speed) - (game.timestamp*speed);
-            sprite.draw();
+          if (sprite.alive == 1) {
+            if (sprite.x < 0-sprite.r-sprite.sw) {
+              liveSprites.delete(sprite);
+            } else {
+              ship_position = ship.x + (ship.l/2)
+              speed = 100;
+              sprite.x = ship_position + (beatTimestamp(sprite.lx)*speed) - (game.timestamp*speed);
+              sprite.draw();
+              
+              switch (sprite.type) {
+                case "coin":
+                  break;
+                case "boulder":
+                  // check boulder in same row
+                  if (sprite.y <= (ship.y + 10) && sprite.y >= (ship.y - 10)) {
+                    // check x axis for collision
+                    
+                    // game over if
+                    // (left of boulder  > right of ship)
+                    // (right of boulder < left of ship)
+                    
+                    // console.log ( sprite.x + " "	+ sprite.r	+ " " + ship.x + " " + ship.l );
+                    if (!( sprite.x - sprite.r > ship.x + ship.l  ||  sprite.x + sprite.r < ship.x )) {
+                      game.fail = true;
+                    }
+                  }      
+              }
+            
+            }
           }
         }
+    
+      } else {
+        background("black");
+        strokeWeight(4);
+        stroke(0);
+        fill(255);
+        textAlign(CENTER);
+        text('------------------- L  I  N  E -------------------\n\nCONTROLS\n\nmove: a s d f g h j k l ;\nshoot: space\n\nclick the screen to start/stop the demo\n\n---------------------------------------------------', width/2, (height/2)-(13*5));
       }
-	
-	  } else {
-      background("black");
-      strokeWeight(4);
-      stroke(0);
-      fill(255);
-      textAlign(CENTER);
-      text('------------------- L  I  N  E -------------------\n\nCONTROLS\n\nmove: a s d f g h j k l ;\nshoot: space\n\nclick the screen to start/stop the demo\n\n---------------------------------------------------', width/2, (height/2)-(13*5));
+    
     }
-	
-	}
+  } else {
+    resetEverything();
+    background("black");
+    strokeWeight(4);
+    stroke(0);
+    fill(255);
+    textAlign(CENTER);
+    text('GAME OVER', width/2, (height/2)-(13*5));
+  
+  }
 }
