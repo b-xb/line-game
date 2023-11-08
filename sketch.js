@@ -160,8 +160,10 @@ function loadSprites(col) {
     switch (col.string.charAt(h)) {
       case '*': 
         liveSprites.add(new spriteConstruct(h,col.levelPosition,"coin"));
+      break;
       case 'X': 
         liveSprites.add(new spriteConstruct(h,col.levelPosition,"boulder"));
+      break;
       default:
     }
 	}
