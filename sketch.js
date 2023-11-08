@@ -9,10 +9,12 @@ game = {
 
 var mySound;
 
-COLOUR1 = "Cyan";
-COLOUR2 = "Yellow";
-COLOUR3 = "GreenYellow";
-COLOUR4 = "Magenta";
+COLOURS = {
+  1:"Cyan",
+  2:"Yellow",
+  3:"GreenYellow",
+  4:"Magenta",
+}
 
 bpm = 120;
 bar_length = 4;
@@ -200,10 +202,10 @@ function startGame() {
   })
   
   for (let i = 0; i < 1200; i+=(bar_length*division)) {
-    mySound.addCue(beatTimestamp(i+0), setBackground, COLOUR1 );
-    mySound.addCue(beatTimestamp(i+(1*division)), setBackground, COLOUR2 );
-    mySound.addCue(beatTimestamp(i+(2*division)), setBackground, COLOUR3 );
-    mySound.addCue(beatTimestamp(i+(3*division)), setBackground, COLOUR4 );
+    mySound.addCue(beatTimestamp(i+0), onBeat, 1 );
+    mySound.addCue(beatTimestamp(i+(1*division)), onBeat, 2 );
+    mySound.addCue(beatTimestamp(i+(2*division)), onBeat, 3 );
+    mySound.addCue(beatTimestamp(i+(3*division)), onBeat, 4 );
   }
   
   // Loops level back to the start
@@ -212,10 +214,15 @@ function startGame() {
 }
 
 function setBackground(val) {
+  game.background=COLOURS[val];
+}
+
+function onBeat(val) {
   if (mySound.isPlaying()) {
     //console.log(mySound.currentTime()+ " " + timestampToBeat(mySound.currentTime()));
   }
-  game.background=val;
+
+  setBackground(val);
   
   //console.log(ship.laser.active);
 	if (ship.laser.active > 0) {
@@ -252,7 +259,7 @@ function mouseClicked() {
     } else {
       mySound.playMode("sustain");
       mySound.play();
-      setBackground(COLOUR1);
+      setBackground(1);
     }
   }
 }
