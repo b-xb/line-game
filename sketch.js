@@ -94,6 +94,9 @@ ship = {
 	sc: "black",
 	sw: 4,
 	v: 0,
+  damage: 0,
+  invincible: 0,
+  invincibleTime: 5,
 	laser: {
 	  active: 0,
 	  cooldown: 0,
@@ -109,7 +112,7 @@ ship = {
   draw: function() {
     fill(this.c);
     strokeWeight(this.sw);
-    stroke(this.sc);
+    stroke( this.invincible>=this.invincibleTime-1 ? "red" : this.invincible > 0 ? "grey" : this.sc);
     beginShape();
     vertex(this.x, this.y);
     vertex(this.x, this.y - (this.h/2));
@@ -232,6 +235,10 @@ function onBeat(val) {
 	if (ship.laser.cooldown > 0) {
 	  ship.laser.cooldown -= 1;
 	}
+
+  if (ship.invincible > 0) {
+	  ship.invincible -= 1;
+	}
 }
 
 function changeText(obj) {
@@ -246,6 +253,10 @@ function resetEverything() {
   game.prev_timestamp = 0;
   ship.v = 0;
   ship.y = 50;
+  ship.damage = 0;
+  ship.invincible = 0;
+  ship.laser.active = 0;
+  ship.laser.cooldown = 0;
 }
 
 function mouseClicked() {
@@ -446,6 +457,7 @@ function draw() {
                 case "coin":
                   break;
                 case "boulder":
+
                   // check boulder in same row
                   if (sprite.y <= (ship.y + 10) && sprite.y >= (ship.y - 10)) {
                     // check x axis for collision
@@ -456,14 +468,28 @@ function draw() {
                     
                     // console.log ( sprite.x + " "	+ sprite.r	+ " " + ship.x + " " + ship.l );
                     if (!( sprite.x - sprite.r > ship.x + ship.l  ||  sprite.x + sprite.r < ship.x )) {
-                      game.fail = true;
+                      if (ship.invincible===0) {
+                        ship.damage += 1;
+                        ship.invincible = ship.invincibleTime;
+                      }
                     }
-                  }      
+                  }
+                  break;
               }
             
             }
           }
         }
+
+        // draw hud
+        strokeWeight(4);
+        stroke(0);
+        fill(255);
+        textAlign(LEFT);
+
+        // damage taken
+        text('damage:'+ship.damage,width-70,height-20)
+
     
       } else {
         background("black");
